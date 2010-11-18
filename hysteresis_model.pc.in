@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name:Hysteresis Model
+Description: Implements the Bouc-Wen-Baber-Noori model for hysteresis  
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lhysteresis_model
+Cflags: -I${includedir}
+
