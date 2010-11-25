@@ -1,5 +1,5 @@
 <package>
-    <description brief="hysteresis model">
+    <description brief="hysteresis model for asguard's torque measurement">
     </description>
     <author>Ajish Babu/ajish.babu@dfki.de</author>
     <copyright>
@@ -7,5 +7,5 @@
     </copyright>
     <license>LGPL v2 or later</license>
 
-    <depend package="base" />
+    <depend package="base/types" />
 </package>
