@@ -95,14 +95,14 @@ void BoucWenBaberNooriModel::setParameters(
 	double _eta,
 	double _h)
 {
-    A	 = A;  		
-    beta = beta;
-    gamma= gamma;
-    n    = n;
-    a    = a;
-    ki   = ki;
-    nu	 = nu;	
-    eta	 = eta;	
-    h	 = h;	
+    A	 = _A;  		
+    beta = _beta;
+    gamma= _gamma;
+    n    = _n;
+    a    = _a;
+    ki   = _ki;
+    nu	 = _nu;	
+    eta	 = _eta;	
+    h	 = _h;	
 }
 
