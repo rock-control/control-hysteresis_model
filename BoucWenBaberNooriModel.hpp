@@ -53,7 +53,8 @@ namespace hysteresis_model
 		    double _ki,
 		    double _nu,
 		    double _eta,
-		    double _h);
+		    double _h,
+                    double _gearPlay);
 
 	    void getParameters(double *p) const;
 
@@ -68,6 +69,8 @@ namespace hysteresis_model
 	    double eta;
 
 	    double h;
+            double gearPlay;
+            double torqueGearPlay;
     };
 }
 #endif 

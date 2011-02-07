@@ -29,7 +29,7 @@ BoucWenBaberNooriModel::BoucWenBaberNooriModel(double _sampling_period, int _sim
     sampling_period = _sampling_period;
     simulation_per_cycle = _simulation_per_cycle;
 
-    setParameters(0.0, 0.0, 0.0,0.0,1.0, 0.0, 0.0, 0.0, 0.0);
+    setParameters(0.0, 0.0, 0.0,0.0,1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 }
 
 inline void BoucWenBaberNooriModel::DERIV(const double t, const double *x, 
@@ -48,7 +48,6 @@ inline void BoucWenBaberNooriModel::DERIV(const double t, const double *x,
 
 double BoucWenBaberNooriModel::getStress(double strain, double strainVel)
 {
-
     ctrl_input[0] = strainVel;
     for (int ii=0; ii < simulation_per_cycle; ii++)
     {
@@ -57,7 +56,17 @@ double BoucWenBaberNooriModel::getStress(double strain, double strainVel)
 
     // Returns the stress which is weighted sum of the actual strain part and
     // the hysteretic strain part
-    return a*ki*strain + (1-a)*ki*plant_state[0];
+    double torque = a*ki*strain + (1-a)*ki*plant_state[0];
+    if(torque < torqueGearPlay && torque > -torqueGearPlay)
+    {
+      torque = 0.0;
+    }
+    else 
+    {
+      torque -= (torque/fabs(torque)) * torqueGearPlay; 
+    }
+
+    return torque; 
 }
 
 void BoucWenBaberNooriModel::getParameters(double *p) const
@@ -71,11 +80,12 @@ void BoucWenBaberNooriModel::getParameters(double *p) const
     p[6] = nu;	
     p[7] = eta;	
     p[8] = h;	
+    p[9] = gearPlay;	
 }
 
 void BoucWenBaberNooriModel::setParameters(double* const p)
 {
-    setParameters(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8]);	
+    setParameters(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9]);	
 
     if(gamma < -beta)
 	gamma = -beta;
@@ -93,7 +103,8 @@ void BoucWenBaberNooriModel::setParameters(
 	double _ki,
 	double _nu,
 	double _eta,
-	double _h)
+	double _h,
+        double _gearPlay)
 {
     A	 = _A;  		
     beta = _beta;
@@ -104,5 +115,8 @@ void BoucWenBaberNooriModel::setParameters(
     nu	 = _nu;	
     eta	 = _eta;	
     h	 = _h;	
+    gearPlay = _gearPlay;
+
+    torqueGearPlay =  a*ki*gearPlay/2.0; 
 }
 
