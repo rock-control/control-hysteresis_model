@@ -56,7 +56,7 @@ double BoucWenBaberNooriModel::getStress(double strain, double strainVel)
 
     // Returns the stress which is weighted sum of the actual strain part and
     // the hysteretic strain part
-    double torque = a*ki*strain + (1-a)*ki*plant_state[0];
+    torque = a*ki*strain + (1-a)*ki*plant_state[0];
     if(torque < torqueGearPlay && torque > -torqueGearPlay)
     {
       torque = 0.0;
@@ -83,6 +83,19 @@ void BoucWenBaberNooriModel::getParameters(double *p) const
     p[9] = gearPlay;	
 }
 
+void BoucWenBaberNooriModel::printParameters() const
+{
+    std::cout <<"A      :"<<A        << std::endl
+              <<"beta   :"<<beta     << std::endl
+              <<"gamma  :"<<gamma    << std::endl
+              <<"n      :"<<n        << std::endl
+              <<"a      :"<<a        << std::endl
+              <<"ki     :"<<ki       << std::endl
+              <<"nu     :"<<nu       << std::endl
+              <<"eta    :"<<eta      << std::endl
+              <<"h      :"<<h	       << std::endl
+              <<"gearPlay:" <<gearPlay << std::endl;
+}
 void BoucWenBaberNooriModel::setParameters(double* const p)
 {
     setParameters(p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],p[8],p[9]);	

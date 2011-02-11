@@ -21,6 +21,7 @@
 
 #include <math.h>
 #include "RK4Integrator.hpp"
+#include "iostream"
 
 
 namespace hysteresis_model
@@ -57,6 +58,7 @@ namespace hysteresis_model
                     double _gearPlay);
 
 	    void getParameters(double *p) const;
+            void printParameters() const;
 
 	private:
 	    double A;  		
@@ -71,6 +73,7 @@ namespace hysteresis_model
 	    double h;
             double gearPlay;
             double torqueGearPlay;
+            double torque;
     };
 }
 #endif 
