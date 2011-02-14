@@ -16,8 +16,8 @@
  * =====================================================================================
  */
 
-#ifndef BOUC_WEN_BABER_NOORI_MODEL_H
-#define BOUC_WEN_BABER_NOORI_MODEL_H
+#ifndef BOUC_WEN_HYSTERESIS_MODEL_H
+#define BOUC_WEN_HYSTERESIS_MODEL_H
 
 #include <math.h>
 #include "RK4Integrator.hpp"
@@ -26,12 +26,12 @@
 
 namespace hysteresis_model
 {
-    class BoucWenBaberNooriModel : public RK4_SIM
+    class BoucWenModel : public RK4_SIM
     {
 	public:
-	    BoucWenBaberNooriModel(double samp_time = 0.001, int _simulation_per_cycle = 1,
+	    BoucWenModel(double samp_time = 0.001, int _simulation_per_cycle = 1,
 		    double _initial_time = 0.0, double *_initial_state = NULL);
-	    ~BoucWenBaberNooriModel() {};
+	    ~BoucWenModel() {};
 
 	    double sampling_period;
 	    int simulation_per_cycle;
@@ -39,10 +39,10 @@ namespace hysteresis_model
 	    inline void DERIV(const double t, const double *x, 
 		    const double *u, double *xdot);
 
-	    double getStress (double strain, double strainVel);
-	    void reset()    {
+	    bool getStress (double currTime, double strain, double& strainVel, double& stress);
+	    void reset(double initTime = 0.0)    {
 		init_param( (sampling_period/((double)simulation_per_cycle)),
-			0.0, NULL);
+			initTime, NULL);
 	    };
 	    void setParameters(double* const p);
 	    void setParameters(
@@ -52,10 +52,10 @@ namespace hysteresis_model
 		    double _n,
 		    double _a,
 		    double _ki,
-		    double _nu,
-		    double _eta,
-		    double _h,
-                    double _gearPlay);
+		    double _gearPlay,
+		    double _deflectionOffset,
+                    double _dampingConstant,
+                    double _velocitySmoothFactor);
 
 	    void getParameters(double *p) const;
             void printParameters() const;
@@ -67,15 +67,20 @@ namespace hysteresis_model
 	    double n;
 	    double a;
 	    double ki;
-	    double nu;
-	    double eta;
 
-	    double h;
             double gearPlay;
+            double deflectionOffset;
+            double dampingConstant;
+            double velocitySmoothFactor;
+
             double torqueGearPlay;
             double torque;
+
+            double prevTime;
+            double prevStrain;
+            double prevStrainVel;
+
+            bool firstRun;
     };
 }
 #endif 
-
-

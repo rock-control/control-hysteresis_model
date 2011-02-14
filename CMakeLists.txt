@@ -19,8 +19,8 @@ INCLUDE_DIRECTORIES(/usr/include/eigen2)
 ADD_LIBRARY(hysteresis_model SHARED 
 	    RK4Integrator.cpp
 	    RK4Integrator.hpp
-	    BoucWenBaberNooriModel.cpp
-	    BoucWenBaberNooriModel.hpp)
+            BoucWenHysteresisModel.cpp
+            BoucWenHysteresisModel.hpp)
  
 CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 ADD_CUSTOM_TARGET(doc doxygen Doxyfile)
@@ -29,7 +29,7 @@ INSTALL(TARGETS hysteresis_model
     LIBRARY DESTINATION lib)
 INSTALL(FILES  
         RK4Integrator.hpp
-	BoucWenBaberNooriModel.hpp
+        BoucWenHysteresisModel.hpp
 	DESTINATION include)
 
 CONFIGURE_FILE(hysteresis_model.pc.in hysteresis_model.pc @ONLY)
