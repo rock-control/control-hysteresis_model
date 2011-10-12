@@ -46,27 +46,30 @@ inline void BoucWenModel::DERIV(const double t, const double *x,
 	);
 }
 
-bool BoucWenModel::getStress(double currTime, double strain, double& strainVel,double& stress)
+bool BoucWenModel::getStress(double currTime, double currStrain, double& strainVel, double& stress)
 {
     if(firstRun)
     {
+      reset(currTime);
       prevTime 		= currTime;
-      prevStrain 	= strain;
+      prevStrain 	= currStrain;
       prevStrainVel	= 0; 
 
       firstRun = false;
-      return false;
+      strainVel = 0;
+      stress = a*ki*(currStrain + deflectionOffset);
+      return true;
     }
 
     // deflection velocity without smoothing
-    strainVel = (strain - prevStrain) / (currTime - prevTime);
+    strainVel = (currStrain - prevStrain) / (currTime - prevTime);
 
     // First order smoothing
     strainVel = 
       velocitySmoothFactor*strainVel + (1.0 - velocitySmoothFactor) * prevStrainVel;
 
     prevTime 		= currTime;
-    prevStrain 	        = strain;
+    prevStrain 	        = currStrain;
     prevStrainVel	= strainVel; 
 
     ctrl_input[0] = strainVel;
@@ -77,17 +80,17 @@ bool BoucWenModel::getStress(double currTime, double strain, double& strainVel,d
 
     // Returns the stress which is weighted sum of the actual strain part and
     // the hysteretic strain part
-    torque = a*ki*(strain + deflectionOffset) + (1-a)*ki*plant_state[0];
+    torque = a*ki*(currStrain + deflectionOffset) + (1-a)*ki*plant_state[0];
 
+ 
     // Damping effect of the coupling
     torque -= dampingConstant * strainVel;
-
     // Gear play is applied when the torque changes
     if(torque <= torqueGearPlay && torque >= -torqueGearPlay)
     {
       torque = 0.0;
     }
-    else 
+    else
     {
       torque -= (torque/fabs(torque)) * torqueGearPlay; 
     }
@@ -95,12 +98,11 @@ bool BoucWenModel::getStress(double currTime, double strain, double& strainVel,d
     // resets when the torque is computed to be NaN
     if(torque != torque)
     {
-      reset(currTime);
+      std::cout << " NaN @ hysteresis model" << std::endl;
       firstRun = true;
       return false;
     }
     stress = torque;
-
     return true; 
 }
 
@@ -130,7 +132,8 @@ void BoucWenModel::printParameters() const
               <<"ki               :"<<ki       << std::endl
               <<"gearPlay         :"<<gearPlay          << std::endl
               <<"deflectionOffset :"<<deflectionOffset  << std::endl
-              <<"dampingConstant  :"<<dampingConstant	<< std::endl;
+              <<"dampingConstant  :"<<dampingConstant	<< std::endl
+              <<"velocitySmoothFactor  :"<<velocitySmoothFactor	<< std::endl;
 }
 
 void BoucWenModel::setParameters(double* const p)
