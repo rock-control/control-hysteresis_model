@@ -83,7 +83,7 @@ bool BoucWenModel::getStress(double currTime, double strain, double& strainVel,d
     torque -= dampingConstant * strainVel;
 
     // Gear play is applied when the torque changes
-    if(torque < torqueGearPlay && torque > -torqueGearPlay)
+    if(torque <= torqueGearPlay && torque >= -torqueGearPlay)
     {
       torque = 0.0;
     }
