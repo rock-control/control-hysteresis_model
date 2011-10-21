@@ -9,7 +9,13 @@ sys.path.append(os.path.dirname(os.path.expanduser('../')))
 import signalsmooth
 import string
 
-MOTOR = 0
+
+#Properties to find the stationary part
+DATA_JUMP = 30000    #Jump from one stationary point to next ...corresponds to 30secs
+DELTA_ANGLE = 0.1    #Delta angle tolerance in degrees to find the stationary pointo find the stationary pointt
+MIN_LENGTH = 1000
+MAX_LENGTH = 4000
+
 g_angle = 0 
 
 SMOOTH = 300
@@ -22,6 +28,39 @@ mVEL = 5
 dPOS = 6
 dVEL = 7
 mCUR = 8
+
+def query_yes_no(question, default="yes"):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+        It must be "yes" (the default), "no" or None (meaning
+        an answer is required of the user).
+
+    The "answer" return value is one of "yes" or "no".
+    """
+    valid = {"yes":True,   "y":True,  "ye":True,
+             "no":False,     "n":False}
+    if default == None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = raw_input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' "\
+                             "(or 'y' or 'n').\n")
+
 
 def differentiate(x, t, smooth_factor):
     n = np.shape(x)[0]
@@ -38,7 +77,21 @@ def RAD(x):
     return x * math.pi / 180.0
 
 def getData(FILE):
+    print "Loading data"
     data = np.loadtxt(FILE, skiprows=1)
+
+    print "Finding the wheel"
+    for i in xrange(0, 4):
+	if(max(data[:,i*4 + 5]) > 0.1):
+	    print "Found Wheel ", i
+	    MOTOR = i
+	    break
+
+    print "Trimming data"
+    trim = np.nonzero(data[:,MOTOR*4 + 5])[0]
+    data = data[trim[0]:trim[-1],...] 
+
+    print "Extracting data"
     time      = (data[:,1] - data[0,1])*0.001;
     g_angle = data[0,MOTOR*4 + 4]
 
@@ -66,6 +119,7 @@ def plot(data):
     pl.grid()
 
 def computeTorque(data, s):
+    print "Computing Torque"
     M_tip = 0.981 + 1.099 + 0.148
     M_rod = 0.115
     D_tip = 0.2
@@ -84,6 +138,7 @@ def computeTorque(data, s):
     return torque 
 
 def writeToFile(FILE, data, torque):
+    print "Writing : CalibrationData.txt"
     fout=open(FILE, 'w')
     for i in xrange(0, np.shape(data)[0]):
 	    fout.write(str(data[i,TIME]));
@@ -95,74 +150,78 @@ def writeToFile(FILE, data, torque):
 	    fout.write(str(data[i,dVEL]));
 	    fout.write('\n');
     fout.close()
+    print "Writing : CalibrationData.txt ... Finished"
 
 def findStationaryParts(data, min_length = 1000, max_length = 5000):
+    print "Computing stationary points"
     indexes = np.zeros((0,2)) 
     i = 0
     while i < np.shape(data)[0] - min_length:
     	for j in xrange(i + 1, i + max_length):
-	    if data[i] != data[j] or j == np.shape(data)[0]-1:
+	    if (math.fabs(data[i] - data[j]) > RAD(DELTA_ANGLE)) or j == np.shape(data)[0]-1:
 		break
 	if j - i >= min_length and j - i <= max_length:
 	    indexes = np.vstack((indexes,[i,j]))
-	    i = j
+	    i = j + DATA_JUMP
 	i=i+1    
 
-#    indexes[1,:] = indexes[2,:]
-#    indexes[2,:] = indexes[3,:]
-#    indexes[3,:] = indexes[4,:]
-#    indexes[4,:] = indexes[5,:]
     return indexes
 
 def main():
-    if (len(sys.argv) != 3):
+    if (len(sys.argv) != 2):
 	print "Wrong number of arguments"
-	print "Correct usage : python ExtractTorqueCalibrationData.py [PATH] [WHEEL NR.]"
+	print "Correct usage : python ExtractTorqueCalibrationData.py [PATH]"
 	sys.exit()
 
-    if not os.path.isfile(sys.argv[1]+'hbridge.txt'):
+    if(sys.argv[1][-1] != "/"):
+	sys.argv[1] += "/"
+
+    if not os.path.isfile(sys.argv[1]+'hbridge.txt') and os.path.isfile(sys.argv[1]+'lowlevel.0.log') :
         print "hbridge.txt :File not found"
         print "Extracting log... "
     	os.system("pocolog " + sys.argv[1] + "lowlevel.0.log -s hbridge.status_motors > " + sys.argv[1] + "hbridge.txt")
     	print "Finished"
-    	print "Loading data"
+    elif not os.path.isfile(sys.argv[1]+'lowlevel.0.log'):
+	print "invalid path"
+	sys.exit()
 
-    global MOTOR
-    MOTOR = int(sys.argv[2])
     data = getData(sys.argv[1] + 'hbridge.txt')
-    plot(data)
+#    plot(data)
 
-    range_stay = findStationaryParts(data[:,wPOS], 1000, 4000)
+    range_stay = findStationaryParts(data[:,wPOS], MIN_LENGTH, MAX_LENGTH)
 
     mid_stay = (range_stay[:,0]+range_stay[:,1]) / 2
     for i in xrange(0, np.shape(mid_stay)[0]):
 	print data[mid_stay[i], TIME]
 
     torque = computeTorque(data, mid_stay)
-#    pl.plot(data[:,TIME], torque, ',', label='Torque(Nm)')
-#    pl.legend()
-
 
     data   = data  [range_stay[0,1]:,...]
     torque = torque[range_stay[0,1]:]
 
-#    print max(data[:,dPOS])
-#    print min(data[:,dPOS])
-#    print ((max(data[:,dPOS]) + min(data[:,dPOS])) / 2.0)
     data[:,dPOS] -= ((max(data[:,dPOS]) + min(data[:,dPOS])) / 2.0)
+    torque -= ((max(torque) + min(torque)) / 2.0)
 
     pl.figure()
     pl.plot( DEG(data[:,dPOS]), torque, ',')
     pl.grid()
-
-    
-#    pl.figure()
-#    pl.plot( torque, data[:,mCUR]/1000.0, ',')
-#    pl.grid()
     
     pl.show()
 
-    writeToFile(sys.argv[1] + 'hbridge_out.txt', data, torque)
+    writeToFile(sys.argv[1] + 'CalibrationData.txt', data, torque)
+
+    if query_yes_no("Start calibration? "):
+        print "Starting calibration... "
+    	os.system("../build/CalibrateCoupling " + sys.argv[1] + "CalibrationData.txt")
+	print "Loading comparison data"
+	data = np.loadtxt("ModelFit.txt", skiprows=1)
+	pl.figure()
+	pl.plot(data[:,1], data[:,2], ',r', label='Model')
+	pl.plot(data[:,1], data[:,3], ',g', label='Fitted')
+	pl.legend();
+	pl.grid()
+
+    pl.show()
 
 if __name__ == "__main__":
     main()

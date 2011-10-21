@@ -75,9 +75,12 @@ void lev_mar_optim::readMeaInput(int n)
     }
 }
 
-void lev_mar_optim::optimize(double *x, double *lp, double *up)
+void lev_mar_optim::optimize(double *x, double *lp, double *up, double* globalp)
 {
     int m = 0, nP = 9;
+    globalP = globalp; 
+    for(int i=0; i <= nP; i++)
+	globalP[i] = x[i];
     for(int i=0; i < nDataFiles; i++)
 	m += (mesTime[i].size());
 
@@ -154,7 +157,10 @@ void torque_error(double *x, double *fvec, int np, int m, void *_adata)
 	{
 	    adata->minError = adata->torqueError;
 	    for(int i=0; i<np; i++)
+	    {
 		adata->optimumParameter[i] = x[i];
+		adata->globalP[i] = x[i];
+	    }
 
 	    printf ( "  - A: %f\n    beta: %f\n    gamma: %f\n    n: %f\n    alpha: %f\n    ki: %f\n    gearPlay: %f\n    deflectionOffset: %f\n    dampingConst: %f\n    velocitySmoothFactor: 0.01\n     Err:%.2f\n", 
 		    adata->optimumParameter[0], adata->optimumParameter[1], adata->optimumParameter[2], 

@@ -41,6 +41,7 @@ class lev_mar_optim
 	double minError;
 	bool firstRun;
 	std::vector<double> optimumParameter;
+	double* globalP;
 	double mesIntpDeflection, mesIntpDeflection_dot, mesIntpTorque, timeFactor, torqueError;
 	double prevDeflection, prevTime, modelTorque;
 
@@ -54,6 +55,6 @@ class lev_mar_optim
 	lev_mar_optim(const std::string &strLogFile,std::vector<std::string> strDataFile,  int _nDataFiles);
 	~lev_mar_optim();
 
-	void optimize(double *p, double *lp, double *up);
+	void optimize(double *p, double *lp, double *up, double *globalp);
 };
 #endif

@@ -73,7 +73,8 @@ void bouc_wen_model_output::setParameters(double *p)
 void bouc_wen_model_output::output()
 {
 	index = 0;
-	while (  hysModel.current_time < tmax  )
+	fprintf ( fileLog, "Time MeasuredDeflection ModelTorque MeasuredTorque MeasuredDeflectionVelocity\n");
+	while (  hysModel.current_time < tmax-0.001  )
 	{
 	    hysModel.getStress(
 		    mesTime[index],
