@@ -14,13 +14,14 @@ pkg_check_modules(BASE_TYPES REQUIRED "base-types")
 INCLUDE_DIRECTORIES(${BASE_TYPES_INCLUDE_DIRS})
 LINK_DIRECTORIES(${BASE_TYPES_LIBRARY_DIRS})
 
-INCLUDE_DIRECTORIES(/usr/include/eigen2)
+pkg_check_modules(MOTOR_CONTROLLER REQUIRED "motor_controller")
+INCLUDE_DIRECTORIES(${MOTOR_CONTROLLER_INCLUDE_DIRS})
+LINK_DIRECTORIES(${MOTOR_CONTROLLER_LIBRARY_DIRS})
 
 ADD_LIBRARY(hysteresis_model SHARED 
-	    RK4Integrator.cpp
-	    RK4Integrator.hpp
             BoucWenHysteresisModel.cpp
             BoucWenHysteresisModel.hpp)
+target_link_libraries(hysteresis_model ${MOTOR_CONTROLLER_LIBRARIES})
  
 CONFIGURE_FILE(Doxyfile.in Doxyfile @ONLY)
 ADD_CUSTOM_TARGET(doc doxygen Doxyfile)
@@ -28,7 +29,6 @@ INSTALL(TARGETS hysteresis_model
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
 INSTALL(FILES  
-        RK4Integrator.hpp
         BoucWenHysteresisModel.hpp
 	DESTINATION include)
 
