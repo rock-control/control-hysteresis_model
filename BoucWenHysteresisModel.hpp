@@ -20,7 +20,7 @@
 #define BOUC_WEN_HYSTERESIS_MODEL_H
 
 #include <math.h>
-#include "RK4Integrator.hpp"
+#include "motor_controller/RK4Integrator.hpp"
 #include "iostream"
 
 
