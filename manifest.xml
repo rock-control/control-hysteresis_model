@@ -1,5 +1,6 @@
 <package>
-    <description brief="hysteresis model for asguard's torque measurement">
+    <description brief="hysteresis model for torque measurements that use an elastic coupling on the actuator">
+        Implementation of a Bouc-When hysteresis model with calibration methods. It is used to calibrate a deflection-to-torque in an actuator that has an elastic coupling
     </description>
     <author>Ajish Babu/ajish.babu@dfki.de</author>
     <copyright>
