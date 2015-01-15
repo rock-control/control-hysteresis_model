@@ -26,7 +26,7 @@
 
 namespace hysteresis_model
 {
-    class BoucWenModel : public RK4_SIM
+    class BoucWenModel : public motor_controller::RK4_SIM
     {
 	public:
 	    BoucWenModel(double samp_time = 0.001, int _simulation_per_cycle = 1,
