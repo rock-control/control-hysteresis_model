@@ -3,6 +3,7 @@
         Implementation of a Bouc-When hysteresis model with calibration methods. It is used to calibrate a deflection-to-torque in an actuator that has an elastic coupling
     </description>
     <author>Ajish Babu/ajish.babu@dfki.de</author>
+    <maintainer>Ajish Babu/ajish.babu@dfki.de</maintainer>
     <copyright>
         DFKI/robotik@dfki.de
     </copyright>
